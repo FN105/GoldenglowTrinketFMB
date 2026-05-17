@@ -353,8 +353,8 @@ namespace GoldenglowTrinket
                 {
                     InEvent = false;
                 }
-                //重写
-                if (IsLocal&&!_TingLiu && !_PuGong && Game1.IsMasterGame)
+                //重写&& Game1.IsMasterGame
+                if (IsLocal&&!_TingLiu && !_PuGong)
                 {
                     if (lerp < 0f)
                     {
@@ -1015,7 +1015,7 @@ namespace GoldenglowTrinket
             private void StartAttackSequence(Monster target, GameLocation location)
             {
                 //if (_PuGong || _TingLiu) return;
-                if (!Game1.IsMasterGame) return;
+                //if (!Game1.IsMasterGame) return;
                 //离开前的位置
                 _leavePosition = Position;
 
@@ -1060,12 +1060,12 @@ namespace GoldenglowTrinket
                 );
                 _nbSelfEffect.AddAppearEffect(location, Position);//出现特效
                 // 发起攻击
-                ShootFireball(location, Owner);
+                //ShootFireball(location, Owner);
 
             }
             private void StartSpecialAttack(Monster target, GameLocation location)
             {
-                if (!Game1.IsMasterGame) return;
+                //if (!Game1.IsMasterGame) return;
                 //离开前的位置
                 _leavePosition = Position;
 
@@ -1223,8 +1223,8 @@ namespace GoldenglowTrinket
 
             private void ShootFireball(GameLocation location, Farmer farmer)
             {
-                if (!Game1.IsMasterGame)
-                    return;
+                //if (!Game1.IsMasterGame)
+                //    return;
                 //Game1.addHUDMessage(new HUDMessage("111"));
                 //Monster target = Utility.findClosestMonsterWithinRange(location, Owner.Position, 1000);
                 if (farmer == null) farmer = Game1.player;
@@ -1265,15 +1265,15 @@ namespace GoldenglowTrinket
                 fireball.ignoreObjectCollisions.Value = true;
                 fireball.startingRotation.Value = projectileRotation;
 
-                if (Game1.IsMasterGame)
+                //if (Game1.IsMasterGame)
                     location.projectiles.Add(fireball);
-                else
-                {
-                    // 客机端：添加子弹到场景用于视觉显示（导致子弹来回横条）（禁用）
-                    // Game1.addHUDMessage(new HUDMessage("111"));
-                    //location.projectiles.Add(fireball);
-                    _nbSelfEffect.AddAppearEffect(location, Position + _fireballOffset + Offset1);
-                }
+                //else
+                //{
+                //    // 客机端：添加子弹到场景用于视觉显示（导致子弹来回横条）（禁用）
+                //    // Game1.addHUDMessage(new HUDMessage("111"));
+                //    //location.projectiles.Add(fireball);
+                //    //_nbSelfEffect.AddAppearEffect(location, Position + _fireballOffset + Offset1);
+                //}
             }
 
 
