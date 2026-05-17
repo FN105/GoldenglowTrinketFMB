@@ -193,7 +193,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
                     stayTimer += deltaMs;
 
                     // 停留超过一定时间后飞出去
-                    if (stayTimer >= 75f)
+                    if (stayTimer >= 80f)
                     {
                         //清空旧目标，不再追尸体
                         _target = null;
@@ -225,7 +225,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
                 }
                 else
                 {
-                    // 正常移动，重置计时
+                    // 正常移动，重置计时123123123123
                     stayTimer = 0f;
                     lastBulletPos = position.Value;
                 }
