@@ -19,7 +19,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
     public class NBProjectile : BasicProjectile
     {
         private Character _firer;
-        private NetRef<Monster> _target = new NetRef<Monster>();
+        private Monster _target;
         private float trackStrength = 0.5f;//插值比例
         private float maxTrackSpeed = 10f;//最大速度
         private int _actualDamage;
@@ -33,9 +33,6 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
 
         public NBProjectile() : base() //无参数构造函数，供网络反序列化使用
         {
-            base.InitNetFields();
-            NetFields.AddField(_target);
-            _target.Value = null;
         }
 
         public NBProjectile(
@@ -75,7 +72,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
         {
             this._actualDamage = actualDamage;
             this._firer = firer;
-            this._target.Value = target;
+            this._target = target;
             this.trackStrength = trackStrength;
             this.maxTrackSpeed = maxTrackSpeed;
             this.lastBulletPos = startingPosition;
@@ -186,7 +183,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
             float deltaMs = (float)time.ElapsedGameTime.TotalMilliseconds;
             
 
-            //if (Game1.IsMasterGame) // 只有主机改速度/目标
+            if (Game1.IsMasterGame) // 只有主机改速度/目标
             //if()
             {
                 float posDis = Vector2.Distance(position.Value, lastBulletPos);
@@ -243,12 +240,12 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
             if (Game1.IsMasterGame)
             {
                 // 跟踪逻辑
-                if (_target.Value != null
-                    && _target.Value.currentLocation == location
-                    && _target.Value.Health > 0)
+                if (_target != null
+                    && _target.currentLocation == location
+                    && _target.Health > 0)
                 {
                     // 计算朝向目标的方向
-                    Vector2 direction = _target.Value.Position - this.position.Value;
+                    Vector2 direction = _target.Position - this.position.Value;
                     if (direction != Vector2.Zero)
                     {
                         direction.Normalize();
@@ -314,7 +311,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
 
             if (newTarget != null)
             {
-                _target.Value = newTarget;
+                _target = newTarget;
                 
             }
             else
