@@ -34,6 +34,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
         public NBProjectile() : base() //无参数构造函数，供网络反序列化使用
         {
             NetFields.AddField(_target);
+            _target.Value = null;
         }
 
         public NBProjectile(
@@ -193,7 +194,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
                     stayTimer += deltaMs;
 
                     // 停留超过一定时间后飞出去
-                    if (stayTimer >= 80f)
+                    if (stayTimer >= 90f)
                     {
                         //清空旧目标，不再追尸体
                         _target = null;
