@@ -33,6 +33,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
 
         public NBProjectile() : base() //无参数构造函数，供网络反序列化使用
         {
+            base.InitNetFields();
             NetFields.AddField(_target);
             _target.Value = null;
         }
@@ -226,7 +227,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
                 }
                 else
                 {
-                    // 正常移动，重置计时123123123123
+                    // 正常移动，重置计时
                     stayTimer = 0f;
                     lastBulletPos = position.Value;
                 }
