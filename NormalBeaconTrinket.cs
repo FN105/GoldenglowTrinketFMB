@@ -7,6 +7,7 @@ using GoldenglowTrinket.NB.NormalBeaconProjectile;
 using GoldenglowTrinket.NB.NormalBeaconTAS;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
+using Netcode;
 using StardewModdingAPI;
 using StardewValley;
 using StardewValley.Companions;
@@ -195,7 +196,7 @@ namespace GoldenglowTrinket
         //随从类
         public class FireballCompanion : FlyingCompanion
         {
-
+            
             private int _BaseDamage = 120;
             private int _ActualDamage = 0;
             private Vector2 _fireballOffset = new Vector2(-50f, -148f);//固定偏移（x-往左，+往右，y-）
@@ -219,7 +220,7 @@ namespace GoldenglowTrinket
             private const float RetreatDuration = 600f; // 缓冲动画总时长（毫秒）
             private Vector2 _originalAttackPos; // 初始攻击位置
             private Vector2 _retreatOffset = new Vector2(0f, 20f); // 后退偏移量
-            //private static int _companionCounter = 0;
+            private static int _companionCounter = 0;
 
             private bool _isSpecialAttacking = false;
             private Vector2 _dashTarget; // 冲刺目标坐标
@@ -258,20 +259,22 @@ namespace GoldenglowTrinket
             private float BaseMultiplier=0.2f; // 攻击初始倍率
             private Vector2 _lastPosition;
             private float AllAttackSpeed =0f;   // 信标总攻速
+            public readonly NetEvent0 AttackEvent = new NetEvent0();
+
             public FireballCompanion() : base(0) // 无参数构造函数，供网络反序列化使用
             {
                 _nbSelfEffect = new NBSelfEffect(this);
                 _nbHitEffect = new NBHitEffect();
                 _lastOwnerPosition = Vector2.Zero;
 
-                //int index = _companionCounter++ % 3;
-                //switch (index)
-                //{
-                //    case 0: _originalOffset = new Vector2(-25f, 45f); break;
-                //    case 1: _originalOffset = new Vector2(0f, 30f); break;
-                //    case 2: _originalOffset = new Vector2(25f, 45f); break;
-                //}
-                //_fireballOffset = _originalOffset;
+                int index = _companionCounter++ % 3;
+                switch (index)
+                {
+                    case 0: _originalOffset = new Vector2(-25f, 45f); break;
+                    case 1: _originalOffset = new Vector2(0f, 30f); break;
+                    case 2: _originalOffset = new Vector2(25f, 45f); break;
+                }
+                _fireballOffset = _originalOffset;
 
                 // 调用 InitializeCompanion 确保 FlyingCompanion 所有网络字段都初始化，防止联机反序列化时空引用崩溃
                 if (Owner != null)
@@ -296,6 +299,20 @@ namespace GoldenglowTrinket
                 _nbSelfEffect = new NBSelfEffect(this);
                 _nbHitEffect = new NBHitEffect();
                 _lastOwnerPosition = Vector2.Zero;
+            }
+            public override void InitNetFields()
+            {
+                base.InitNetFields();
+                NetFields.AddField(AttackEvent, "AttackEvent");
+                AttackEvent.onEvent += OnAttackEvent;
+            }
+
+            private void OnAttackEvent()
+            {
+                if (target != null && Owner?.currentLocation != null)
+                {
+                    StartAttackSequence(target, Owner.currentLocation);
+                }
             }
 
             private bool HasEnhancementUnit(string itemId)
@@ -396,6 +413,7 @@ namespace GoldenglowTrinket
                 }
 
                 hopEvent.Poll();
+                AttackEvent.Poll(); // 处理攻击同步事件
                 if (gravity != 0f || height != 0f)
                 {
                     height += gravity;
@@ -436,7 +454,7 @@ namespace GoldenglowTrinket
 
                 GongSu = 1300f;//总攻速
                 if (_ActualDamage == 0) _ActualDamage = (int)(_BaseDamage * BaseMultiplier);
-                if (Game1.shouldTimePass())
+                if (IsLocal && Game1.shouldTimePass())
                 {
                     // 通过 _parent 访问实例方法
                     HashSet<string> ignoreLocations = _parent?.GetIgnoredLocations() ?? new HashSet<string>();
@@ -671,7 +689,7 @@ namespace GoldenglowTrinket
                                     TeShuGongJiGaiLv += 0.015f;
                                     //Game1.addHUDMessage(new HUDMessage("下次攻击暴击的概率="+ TeShuGongJiGaiLv));
                                     _TingLiu = true;
-                                    StartAttackSequence(target, location);
+                                    AttackEvent.Fire();
                                     //Game1.addHUDMessage(new HUDMessage("当前伤害：" + _ActualDamage));
                                     if (_ActualDamage < (int)(_BaseDamage * (1.1f+ BaseMultiplier-0.2f)))
                                     {
@@ -705,7 +723,7 @@ namespace GoldenglowTrinket
                                 TeShuGongJiGaiLv += 0.015f;
                                 //Game1.addHUDMessage(new HUDMessage("下次攻击暴击概率=" + TeShuGongJiGaiLv));
                                 _TingLiu = true;
-                                StartAttackSequence(target, location);
+                                AttackEvent.Fire();
                                 _isRight = false;
                                 _nbSelfEffect.AddDisappearEffect(location, _leavePosition);
                                 //Game1.addHUDMessage(new HUDMessage("当前伤害：" + _ActualDamage));
@@ -1060,7 +1078,7 @@ namespace GoldenglowTrinket
                 );
                 _nbSelfEffect.AddAppearEffect(location, Position);//出现特效
                 // 发起攻击
-                //ShootFireball(location, Owner);
+                ShootFireball(location, Owner);
 
             }
             private void StartSpecialAttack(Monster target, GameLocation location)
