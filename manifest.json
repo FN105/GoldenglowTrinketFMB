@@ -1,0 +1,8 @@
+{
+  "Name": "GoldenglowTrinket",
+  "Author": "ForNext",
+  "Version": "1.1.7",
+  "Description": "澄闪信标饰品GoldenglowTrinket",
+  "EntryDll": "GoldenglowTrinket.dll",
+  "UniqueID": "ForNext.GoldenglowTrinket"
+}
