@@ -354,7 +354,7 @@ namespace GoldenglowTrinket
                     InEvent = false;
                 }
                 //重写
-                if (IsLocal&&!_TingLiu && !_PuGong)
+                if (IsLocal&&!_TingLiu && !_PuGong && Game1.IsMasterGame)
                 {
                     if (lerp < 0f)
                     {
@@ -1015,7 +1015,7 @@ namespace GoldenglowTrinket
             private void StartAttackSequence(Monster target, GameLocation location)
             {
                 //if (_PuGong || _TingLiu) return;
-
+                if (!Game1.IsMasterGame) return;
                 //离开前的位置
                 _leavePosition = Position;
 
@@ -1065,7 +1065,7 @@ namespace GoldenglowTrinket
             }
             private void StartSpecialAttack(Monster target, GameLocation location)
             {
-                
+                if (!Game1.IsMasterGame) return;
                 //离开前的位置
                 _leavePosition = Position;
 
@@ -1223,6 +1223,9 @@ namespace GoldenglowTrinket
 
             private void ShootFireball(GameLocation location, Farmer farmer)
             {
+                if (!Game1.IsMasterGame)
+                    return;
+                //Game1.addHUDMessage(new HUDMessage("111"));
                 //Monster target = Utility.findClosestMonsterWithinRange(location, Owner.Position, 1000);
                 if (farmer == null) farmer = Game1.player;
                 if (target == null) return;
@@ -1267,7 +1270,8 @@ namespace GoldenglowTrinket
                 else
                 {
                     // 客机端：添加子弹到场景用于视觉显示（导致子弹来回横条）（禁用）
-                    location.projectiles.Add(fireball);
+                    // Game1.addHUDMessage(new HUDMessage("111"));
+                    //location.projectiles.Add(fireball);
                     _nbSelfEffect.AddAppearEffect(location, Position + _fireballOffset + Offset1);
                 }
             }

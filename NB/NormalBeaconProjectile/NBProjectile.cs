@@ -113,25 +113,25 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
         }
         public override void behaviorOnCollisionWithMonster(NPC n, GameLocation location)
         {
-            if (!Game1.IsMasterGame)
+            if (Game1.IsMasterGame)
             {
                 if (collisionBehavior != null)
                     collisionBehavior(location, (int)position.Value.X, (int)position.Value.Y, null);
                 //return;
                 if (collisionBehavior != null) //客机端命中特效
                     collisionBehavior(location, (int)position.Value.X, (int)position.Value.Y, null);
-                location.explode(
-                new Vector2(position.Value.X / 64, position.Value.Y / 64),
-                1,
-                Game1.player,
-                false,
-                _actualDamage,
-                true
-            );
-                destroyMe = true;
-                piercesLeft.Value = 0;
+            //    location.explode(
+            //    new Vector2(position.Value.X / 64, position.Value.Y / 64),
+            //    1,
+            //    Game1.player,
+            //    false,
+            //    _actualDamage,
+            //    true
+            //);
+            //    destroyMe = true;
+            //    piercesLeft.Value = 0;
 
-                return;
+                //return;
             }
 
             if (!damagesMonsters.Value)
@@ -166,6 +166,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
                 );
                     piercesLeft.Value = 0;
                     this.destroyMe = true;
+                //Game1.addHUDMessage(new HUDMessage("111"+ _actualDamage));
                 return;
             }
 
@@ -192,7 +193,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
                     stayTimer += deltaMs;
 
                     // 停留超过一定时间后飞出去
-                    if (stayTimer >= 90f)
+                    if (stayTimer >= 50f)
                     {
                         //清空旧目标，不再追尸体
                         _target = null;
