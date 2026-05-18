@@ -319,6 +319,7 @@ namespace GoldenglowTrinket
                     case 0: _originalOffset = new Vector2(-25f, 45f); break;
                     case 1: _originalOffset = new Vector2(0f, 30f); break;
                     case 2: _originalOffset = new Vector2(25f, 45f); break;
+                    case 3: _originalOffset = new Vector2(40f, 40f); break;
                 }
                 _fireballOffset = _originalOffset;
 
@@ -475,9 +476,9 @@ namespace GoldenglowTrinket
                 // 周期摆动
                 _rotationAngle1 = SwingAmplitude * (float)Math.Sin(_swingTimer * SwingSpeed);//左边弧度，右边速度
 
-                GongSu = 1300f;//总攻速IsLocal && 
+                GongSu = 1300f;//总攻速IsLocal && && IsLocal
                 if (_ActualDamage == 0) _ActualDamage = (int)(_BaseDamage * BaseMultiplier);
-                if (Game1.shouldTimePass()&& IsLocal)
+                if (Game1.shouldTimePass())
                 {
                     // 通过 _parent 访问实例方法
                     HashSet<string> ignoreLocations = _parent?.GetIgnoredLocations() ?? new HashSet<string>();
@@ -553,20 +554,20 @@ namespace GoldenglowTrinket
                                 _TingLiuTime = 0f;
                                 _PuGong.Value = true; // 进入等待 0.8s 状态(如果_PuGong= true，那么饰品就会消失0.8s)
                                 _nbSelfEffect.AddDisappearEffect(location, _attackPosition.Value);
-                                if (this.Owner?.IsLocalPlayer ?? false)
-                                {
-                                    ModEntry.StaticHelper.Multiplayer.SendMessage(
-                                        message: new ModEntry.SelfEffectMessage
-                                        {
-                                            EffectType = "AddDisappearEffect",
-                                            X = _attackPosition.Value.X,
-                                            Y = _attackPosition.Value.Y,
-                                            LocationName = location.Name
-                                        },
-                                        messageType: "GoldenglowTrinket/PlaySelfEffect",
-                                        playerIDs: Game1.otherFarmers.Keys.ToArray()
-                                    );
-                                }
+                                //if (this.Owner?.IsLocalPlayer ?? false)
+                                //{
+                                //    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                //        message: new ModEntry.SelfEffectMessage
+                                //        {
+                                //            EffectType = "AddDisappearEffect",
+                                //            X = _attackPosition.Value.X,
+                                //            Y = _attackPosition.Value.Y,
+                                //            LocationName = location.Name
+                                //        },
+                                //        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                //        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                //    );
+                                //}
                                 location.playSound("Goldenglow_BeaconFade");
                             }
                         }
@@ -752,20 +753,20 @@ namespace GoldenglowTrinket
                                 StartSpecialAttack(target, location);
                                 _isRight.Value = false;
                                 _nbSelfEffect.AddDisappearEffect(location, _leavePosition.Value);
-                                if (this.Owner?.IsLocalPlayer ?? false)
-                                {
-                                    ModEntry.StaticHelper.Multiplayer.SendMessage(
-                                        message: new ModEntry.SelfEffectMessage
-                                        {
-                                            EffectType = "AddDisappearEffect",
-                                            X = _leavePosition.Value.X,
-                                            Y = _leavePosition.Value.Y,
-                                            LocationName = location.Name
-                                        },
-                                        messageType: "GoldenglowTrinket/PlaySelfEffect",
-                                        playerIDs: Game1.otherFarmers.Keys.ToArray()
-                                    );
-                                }
+                                //if (this.Owner?.IsLocalPlayer ?? false)
+                                //{
+                                //    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                //        message: new ModEntry.SelfEffectMessage
+                                //        {
+                                //            EffectType = "AddDisappearEffect",
+                                //            X = _leavePosition.Value.X,
+                                //            Y = _leavePosition.Value.Y,
+                                //            LocationName = location.Name
+                                //        },
+                                //        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                //        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                //    );
+                                //}
                                 _ActualDamage = (int)(_BaseDamage * BaseMultiplier);
                                 //_minDamage = 24;
                                 //_maxDamage = 32;
@@ -779,20 +780,20 @@ namespace GoldenglowTrinket
                                 StartAttackSequence(target, location);
                                 _isRight.Value = false;
                                 _nbSelfEffect.AddDisappearEffect(location, _leavePosition.Value);
-                                if (this.Owner?.IsLocalPlayer ?? false)
-                                {
-                                    ModEntry.StaticHelper.Multiplayer.SendMessage(
-                                        message: new ModEntry.SelfEffectMessage
-                                        {
-                                            EffectType = "AddDisappearEffect",
-                                            X = _leavePosition.Value.X,
-                                            Y = _leavePosition.Value.Y,
-                                            LocationName = location.Name
-                                        },
-                                        messageType: "GoldenglowTrinket/PlaySelfEffect",
-                                        playerIDs: Game1.otherFarmers.Keys.ToArray()
-                                    );
-                                }
+                                //if (this.Owner?.IsLocalPlayer ?? false)
+                                //{
+                                //    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                //        message: new ModEntry.SelfEffectMessage
+                                //        {
+                                //            EffectType = "AddDisappearEffect",
+                                //            X = _leavePosition.Value.X,
+                                //            Y = _leavePosition.Value.Y,
+                                //            LocationName = location.Name
+                                //        },
+                                //        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                //        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                //    );
+                                //}
                                 //Game1.addHUDMessage(new HUDMessage("当前伤害：" + _ActualDamage));
                                 _ActualDamage += (int)(_BaseDamage * 0.15);
                                 //_minDamage += 18;
@@ -916,20 +917,20 @@ namespace GoldenglowTrinket
                             {
                                 _PuGong.Value = true;
                                 _nbSelfEffect.AddDisappearEffect(location, _attackPosition.Value);
-                                if (this.Owner?.IsLocalPlayer ?? false)
-                                {
-                                    ModEntry.StaticHelper.Multiplayer.SendMessage(
-                                        message: new ModEntry.SelfEffectMessage
-                                        {
-                                            EffectType = "AddDisappearEffect",
-                                            X = _attackPosition.Value.X,
-                                            Y = _attackPosition.Value.Y,
-                                            LocationName = location.Name
-                                        },
-                                        messageType: "GoldenglowTrinket/PlaySelfEffect",
-                                        playerIDs: Game1.otherFarmers.Keys.ToArray()
-                                    );
-                                }
+                                //if (this.Owner?.IsLocalPlayer ?? false)
+                                //{
+                                //    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                //        message: new ModEntry.SelfEffectMessage
+                                //        {
+                                //            EffectType = "AddDisappearEffect",
+                                //            X = _attackPosition.Value.X,
+                                //            Y = _attackPosition.Value.Y,
+                                //            LocationName = location.Name
+                                //        },
+                                //        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                //        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                //    );
+                                //}
                                 _TingLiu.Value = false;
                                 _TingLiuTime = 0f;
                             }
@@ -1081,39 +1082,39 @@ namespace GoldenglowTrinket
                                     //Game1.addHUDMessage(new HUDMessage("位置" + Position));
                                      
                                     _nbSelfEffect.AddAppearEffect(location, Position);
-                                    if (this.Owner?.IsLocalPlayer ?? false)
-                                    {
-                                        ModEntry.StaticHelper.Multiplayer.SendMessage(
-                                            message: new ModEntry.SelfEffectMessage
-                                            {
-                                                EffectType = "AddAppearEffect",
-                                                X = Position.X,
-                                                Y = Position.Y,
-                                                LocationName = location.Name
-                                            },
-                                            messageType: "GoldenglowTrinket/PlaySelfEffect",
-                                            playerIDs: Game1.otherFarmers.Keys.ToArray()
-                                        );
-                                    }
+                                    //if (this.Owner?.IsLocalPlayer ?? false)
+                                    //{
+                                    //    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                    //        message: new ModEntry.SelfEffectMessage
+                                    //        {
+                                    //            EffectType = "AddAppearEffect",
+                                    //            X = Position.X,
+                                    //            Y = Position.Y,
+                                    //            LocationName = location.Name
+                                    //        },
+                                    //        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                    //        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                    //    );
+                                    //}
                                 }
                                 else
                                 {
                                     // 使用原来的位置
                                     _nbSelfEffect.AddAppearEffect(location, Position);
-                                    if (this.Owner?.IsLocalPlayer ?? false)
-                                    {
-                                        ModEntry.StaticHelper.Multiplayer.SendMessage(
-                                            message: new ModEntry.SelfEffectMessage
-                                            {
-                                                EffectType = "AddAppearEffect",
-                                                X = Position.X,
-                                                Y = Position.Y,
-                                                LocationName = location.Name
-                                            },
-                                            messageType: "GoldenglowTrinket/PlaySelfEffect",
-                                            playerIDs: Game1.otherFarmers.Keys.ToArray()
-                                        );
-                                    }
+                                    //if (this.Owner?.IsLocalPlayer ?? false)
+                                    //{
+                                    //    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                    //        message: new ModEntry.SelfEffectMessage
+                                    //        {
+                                    //            EffectType = "AddAppearEffect",
+                                    //            X = Position.X,
+                                    //            Y = Position.Y,
+                                    //            LocationName = location.Name
+                                    //        },
+                                    //        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                    //        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                    //    );
+                                    //}
                                 }
                                 //Position = Owner.Position + _originalOffset;
 
@@ -1128,20 +1129,20 @@ namespace GoldenglowTrinket
                         {
                             //Game1.addHUDMessage(new HUDMessage("日常特效"));
                             _nbSelfEffect.AddCasualParticles(location, Position);
-                            if (this.Owner?.IsLocalPlayer ?? false)
-                            {
-                                ModEntry.StaticHelper.Multiplayer.SendMessage(
-                                    message: new ModEntry.SelfEffectMessage
-                                    {
-                                        EffectType = "AddCasualParticles",
-                                        X = Position.X,
-                                        Y = Position.Y,
-                                        LocationName = location.Name
-                                    },
-                                    messageType: "GoldenglowTrinket/PlaySelfEffect",
-                                    playerIDs: Game1.otherFarmers.Keys.ToArray()
-                                );
-                            }
+                            //if (this.Owner?.IsLocalPlayer ?? false)
+                            //{
+                            //    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                            //        message: new ModEntry.SelfEffectMessage
+                            //        {
+                            //            EffectType = "AddCasualParticles",
+                            //            X = Position.X,
+                            //            Y = Position.Y,
+                            //            LocationName = location.Name
+                            //        },
+                            //        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                            //        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                            //    );
+                            //}
                             _dailyParticleTimer = 0f;
 
                         }
@@ -1200,20 +1201,20 @@ namespace GoldenglowTrinket
                     (float)Math.Sin(angle1) * 15f
                 );
                 _nbSelfEffect.AddAppearEffect(location, Position);//出现特效
-                if (this.Owner?.IsLocalPlayer ?? false)
-                {
-                    ModEntry.StaticHelper.Multiplayer.SendMessage(
-                        message: new ModEntry.SelfEffectMessage
-                        {
-                            EffectType = "AddAppearEffect",
-                            X = Position.X,
-                            Y = Position.Y,
-                            LocationName = location.Name
-                        },
-                        messageType: "GoldenglowTrinket/PlaySelfEffect",
-                        playerIDs: Game1.otherFarmers.Keys.ToArray()
-                    );
-                }
+                //if (this.Owner?.IsLocalPlayer ?? false)
+                //{
+                //    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                //        message: new ModEntry.SelfEffectMessage
+                //        {
+                //            EffectType = "AddAppearEffect",
+                //            X = Position.X,
+                //            Y = Position.Y,
+                //            LocationName = location.Name
+                //        },
+                //        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                //        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                //    );
+                //}
                 // 发起攻击
                 ShootFireball(location, Owner);
 
@@ -1262,20 +1263,20 @@ namespace GoldenglowTrinket
                 );
 
                 _nbSelfEffect.AddAppearEffect(location, Position);//出现特效
-                if (this.Owner?.IsLocalPlayer ?? false)
-                {
-                    ModEntry.StaticHelper.Multiplayer.SendMessage(
-                        message: new ModEntry.SelfEffectMessage
-                        {
-                            EffectType = "AddAppearEffect",
-                            X = Position.X,
-                            Y = Position.Y,
-                            LocationName = location.Name
-                        },
-                        messageType: "GoldenglowTrinket/PlaySelfEffect",
-                        playerIDs: Game1.otherFarmers.Keys.ToArray()
-                    );
-                }
+                //if (this.Owner?.IsLocalPlayer ?? false)
+                //{
+                //    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                //        message: new ModEntry.SelfEffectMessage
+                //        {
+                //            EffectType = "AddAppearEffect",
+                //            X = Position.X,
+                //            Y = Position.Y,
+                //            LocationName = location.Name
+                //        },
+                //        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                //        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                //    );
+                //}
                 // 发起攻击
                 //ShootFireball(location, Owner);
 
