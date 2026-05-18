@@ -211,6 +211,7 @@ namespace GoldenglowTrinket
             private float _TingLiuTime;
             private float _PuGongCD;
             private bool _PuGong = false;
+            //private NetBool _PuGong = new NetBool();//这个111
             float _animationTimer = 0f;
             float _animationTimer1 = 0f;
             private float _rotationAngle;
@@ -226,6 +227,7 @@ namespace GoldenglowTrinket
             private Vector2 _dashTarget; // 冲刺目标坐标
             private bool BaoZhaCiShu = true;
             private bool XiaoShi = false;
+            //private NetBool XiaoShi = new NetBool();//这个111
             private float _swingTimer;      // 摇摆计时器
             private float SwingSpeed = 0.007f;  // 摇摆速度（值越大摆动越快）
             private float SwingAmplitude = 0.04f; // 摇摆幅度（弧度值）
@@ -259,30 +261,9 @@ namespace GoldenglowTrinket
             private float BaseMultiplier=0.2f; // 攻击初始倍率
             private Vector2 _lastPosition;
             private float AllAttackSpeed =0f;   // 信标总攻速
-            public readonly NetEvent0 AttackEvent = new NetEvent0();
+            //public readonly NetEvent0 AttackEvent = new NetEvent0();
 
-            public FireballCompanion() : base(0) // 无参数构造函数，供网络反序列化使用
-            {
-                _nbSelfEffect = new NBSelfEffect(this);
-                _nbHitEffect = new NBHitEffect();
-                _lastOwnerPosition = Vector2.Zero;
-
-                int index = _companionCounter++ % 3;
-                switch (index)
-                {
-                    case 0: _originalOffset = new Vector2(-25f, 45f); break;
-                    case 1: _originalOffset = new Vector2(0f, 30f); break;
-                    case 2: _originalOffset = new Vector2(25f, 45f); break;
-                }
-                _fireballOffset = _originalOffset;
-
-                // 调用 InitializeCompanion 确保 FlyingCompanion 所有网络字段都初始化，防止联机反序列化时空引用崩溃
-                if (Owner != null)
-                    InitializeCompanion(Owner);
-                    // 确保必要的网络字段有默认值
-                    if (lerp < 0f) lerp = -1f;
-                    if (direction.Value == 0) direction.Value = 2;
-            }
+           
             public FireballCompanion(NormalBeaconTrinket parent, int variant, float fireballDelay, Vector2 offset)
             : base(variant)
             {
@@ -303,17 +284,42 @@ namespace GoldenglowTrinket
             public override void InitNetFields()
             {
                 base.InitNetFields();
-                NetFields.AddField(AttackEvent, "AttackEvent");
-                AttackEvent.onEvent += OnAttackEvent;
+                //NetFields.AddField(AttackEvent, "AttackEvent");
+                //.AddField(_PuGong, "_PuGong")
+                //.AddField(XiaoShi, "XiaoShi");
+                //AttackEvent.onEvent += OnAttackEvent;
+            }
+            public FireballCompanion() : base(0) // 无参数构造函数，供网络反序列化使用
+            {
+                _nbSelfEffect = new NBSelfEffect(this);
+                _nbHitEffect = new NBHitEffect();
+                _lastOwnerPosition = Vector2.Zero;
+                //_PuGong.Value = false;
+                //XiaoShi.Value = false;
+                int index = _companionCounter++ % 3;
+                switch (index)
+                {
+                    case 0: _originalOffset = new Vector2(-25f, 45f); break;
+                    case 1: _originalOffset = new Vector2(0f, 30f); break;
+                    case 2: _originalOffset = new Vector2(25f, 45f); break;
+                }
+                _fireballOffset = _originalOffset;
+
+                // 调用 InitializeCompanion 确保 FlyingCompanion 所有网络字段都初始化，防止联机反序列化时空引用崩溃
+                if (Owner != null)
+                    InitializeCompanion(Owner);
+                // 确保必要的网络字段有默认值
+                if (lerp < 0f) lerp = -1f;
+                if (direction.Value == 0) direction.Value = 2;
             }
 
-            private void OnAttackEvent()
-            {
-                if (target != null && Owner?.currentLocation != null)
-                {
-                    StartAttackSequence(target, Owner.currentLocation);
-                }
-            }
+            //private void OnAttackEvent()
+            //{
+            //    if (target != null && Owner?.currentLocation != null)
+            //    {
+            //        StartAttackSequence(target, Owner.currentLocation);
+            //    }
+            //}
 
             private bool HasEnhancementUnit(string itemId)
             {
@@ -371,7 +377,7 @@ namespace GoldenglowTrinket
                     InEvent = false;
                 }
                 //重写&& Game1.IsMasterGame IsLocal&&
-                if (!_TingLiu && !_PuGong)
+                if (IsLocal&&!_TingLiu && !_PuGong)
                 {
                     if (lerp < 0f)
                     {
@@ -413,7 +419,7 @@ namespace GoldenglowTrinket
                 }
 
                 hopEvent.Poll();
-                AttackEvent.Poll(); // 处理攻击同步事件
+                //AttackEvent.Poll(); // 处理攻击同步事件
                 if (gravity != 0f || height != 0f)
                 {
                     height += gravity;
@@ -644,7 +650,7 @@ namespace GoldenglowTrinket
                                 _TingLiu = false;
                                 _TingLiuTime = 0f;
                                 BaoZhaCiShu = true;
-                                _PuGong = true; // 进入等待 0.7s 状态(如果_PuGong= true，那么饰品就会消失0.7s)
+                                _PuGong= true; // 进入等待 0.7s 状态(如果_PuGong= true，那么饰品就会消失0.7s)
                                 if (!XiaoShi)
                                 {
                                     //_nbSelfEffect.AddDisappearEffect(location, _attackPosition);//消失
@@ -689,7 +695,8 @@ namespace GoldenglowTrinket
                                     TeShuGongJiGaiLv += 0.015f;
                                     //Game1.addHUDMessage(new HUDMessage("下次攻击暴击的概率="+ TeShuGongJiGaiLv));
                                     _TingLiu = true;
-                                    AttackEvent.Fire();
+                                    //AttackEvent.Fire();
+                                    StartAttackSequence(target, location);
                                     //Game1.addHUDMessage(new HUDMessage("当前伤害：" + _ActualDamage));
                                     if (_ActualDamage < (int)(_BaseDamage * (1.1f+ BaseMultiplier-0.2f)))
                                     {
@@ -723,7 +730,8 @@ namespace GoldenglowTrinket
                                 TeShuGongJiGaiLv += 0.015f;
                                 //Game1.addHUDMessage(new HUDMessage("下次攻击暴击概率=" + TeShuGongJiGaiLv));
                                 _TingLiu = true;
-                                AttackEvent.Fire();
+                                //AttackEvent.Fire();
+                                StartAttackSequence(target, location);
                                 _isRight = false;
                                 _nbSelfEffect.AddDisappearEffect(location, _leavePosition);
                                 //Game1.addHUDMessage(new HUDMessage("当前伤害：" + _ActualDamage));
@@ -1243,8 +1251,8 @@ namespace GoldenglowTrinket
             {
                 //if (!Game1.IsMasterGame)//用这个客机发不出子弹
                 //    return; //IsLocal
-                if (!IsLocal)//这里双方看不到对方子弹
-                    return;
+                //if (!IsLocal)//这里双方看不到对方子弹
+                //    return;
                 //Game1.addHUDMessage(new HUDMessage("111"));
                 //Monster target = Utility.findClosestMonsterWithinRange(location, Owner.Position, 1000);
                 if (farmer == null) farmer = Game1.player;
@@ -1285,8 +1293,30 @@ namespace GoldenglowTrinket
                 fireball.ignoreObjectCollisions.Value = true;
                 fireball.startingRotation.Value = projectileRotation;
 
-                //if (Game1.IsMasterGame)
+                //if (Game1.IsMasterGame)//这么写只有主机正常
+                //这里双方看不到对方子弹(延迟
+                    if (!IsLocal) return;
                     location.projectiles.Add(fireball);
+
+                //}else
+                //{
+                //    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                //        message: new ModEntry.FireballSyncMessage
+                //        {
+                //            LocationName = location.Name,
+                //            PosX = Position.X + _fireballOffset.X + Offset1.X,
+                //            PosY = Position.Y + _fireballOffset.Y + Offset1.Y,
+                //            VelX = motion.X,
+                //            VelY = motion.Y,
+                //            TargetX = target.Position.X,
+                //            TargetY = target.Position.Y,
+                //            Damage = fireball._actualDamage
+                //        },
+                //        messageType: "GoldenglowTrinket/SyncFireball",
+                //        playerIDs: Game1.otherFarmers.Keys.ToArray() // 发给所有其他玩家
+                //    );
+                //}
+
                 //else
                 //{
                 //    // 客机端：添加子弹到场景用于视觉显示（导致子弹来回横条）（禁用）
@@ -1294,6 +1324,25 @@ namespace GoldenglowTrinket
                 //    //location.projectiles.Add(fireball);
                 //    //_nbSelfEffect.AddAppearEffect(location, Position + _fireballOffset + Offset1);
                 //}
+                //if (Game1.IsMultiplayer)
+                //{
+                //    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                //        message: new ModEntry.FireballSyncMessage
+                //        {
+                //            LocationName = location.Name,
+                //            PosX = Position.X + _fireballOffset.X + Offset1.X,
+                //            PosY = Position.Y + _fireballOffset.Y + Offset1.Y,
+                //            VelX = motion.X,
+                //            VelY = motion.Y,
+                //            TargetX = target.Position.X,
+                //            TargetY = target.Position.Y,
+                //            Damage = fireball._actualDamage
+                //        },
+                //        messageType: "GoldenglowTrinket/SyncFireball",
+                //        playerIDs: Game1.otherFarmers.Keys.ToArray() // 发给所有其他玩家
+                //    );
+                //}
+
             }
 
 
@@ -1305,7 +1354,7 @@ namespace GoldenglowTrinket
                 Vector2 explosionCenter = new Vector2(x, y);
                 
                 _nbHitEffect.CreateExplosion(location, explosionCenter);
-                if (this.Owner.IsLocalPlayer)
+                if (this.Owner?.IsLocalPlayer ?? false)
                 {
                     ModEntry.StaticHelper.Multiplayer.SendMessage(
                         message: new ModEntry.HitEffectMessage

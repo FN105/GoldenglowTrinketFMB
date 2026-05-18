@@ -22,7 +22,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
         private Monster _target;
         private float trackStrength = 0.5f;//插值比例
         private float maxTrackSpeed = 10f;//最大速度
-        private int _actualDamage;
+        public int _actualDamage;
         private Farmer _ownerFarmer;
         Random random = new Random();
         private float TrackParticlesTimer;
@@ -30,7 +30,26 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
         private float stayTimer;
         private readonly float stayRange = 16f;      // 判定"没动"的范围（像素）
         private bool isFreeFlying = false;
+        //private readonly NetRef<Farmer> _owner = new NetRef<Farmer>();
+        //public bool IsLocal => Owner.IsLocalPlayer;
+        //public Farmer Owner
+        //{
+        //    get
+        //    {
+        //        return _owner.Value;
+        //    }
+        //    set
+        //    {
+        //        _owner.Value = value;
+        //    }
+        //}
+        protected override void InitNetFields()
+        {
+            base.InitNetFields();
+            //base.NetFields
 
+                //.AddField(_owner, "owner");
+        }
         public NBProjectile() : base() //无参数构造函数，供网络反序列化使用
         {
         }
@@ -113,10 +132,10 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
         }
         public override void behaviorOnCollisionWithMonster(NPC n, GameLocation location)
         {
-            if (Game1.IsMasterGame)
+            //if (Game1.IsMasterGame)
             {
-                if (collisionBehavior != null)
-                    collisionBehavior(location, (int)position.Value.X, (int)position.Value.Y, null);
+                //if (collisionBehavior != null)
+                //    collisionBehavior(location, (int)position.Value.X, (int)position.Value.Y, null);
                 //return;
                 //if (collisionBehavior != null) //客机端命中特效
                 //    collisionBehavior(location, (int)position.Value.X, (int)position.Value.Y, null);
@@ -180,12 +199,21 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
         {
             //if (destroyMe)
             //return base.update(time, location);
+            TrackParticlesTimer += time.ElapsedGameTime.Milliseconds;
+            if (TrackParticlesTimer >= 30f)
+            {
+                TrackParticlesTimer = 0;
+                TrackParticles(location);
+            }
 
             float deltaMs = (float)time.ElapsedGameTime.TotalMilliseconds;
-            
+
+            Farmer firer = GetPlayerWhoFiredMe(location);
+            bool isLocalOwner = firer == Game1.player;
 
             //if (Game1.IsMasterGame) // 只有主机改速度/目标
             //if()
+            if (isLocalOwner)
             {
                 float posDis = Vector2.Distance(position.Value, lastBulletPos);
                 if (posDis < stayRange)
@@ -229,73 +257,74 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
                     stayTimer = 0f;
                     lastBulletPos = position.Value;
                 }
-            }
 
-            TrackParticlesTimer += time.ElapsedGameTime.Milliseconds;
-            if (TrackParticlesTimer >= 30f)
-            {
-                TrackParticlesTimer = 0;
-                TrackParticles(location);
-            }
 
-            //if (Game1.IsMasterGame)
-            {
-                // 跟踪逻辑
-                if (_target != null
-                    && _target.currentLocation == location
-                    && _target.Health > 0)
+                
+                //Owner.IsLocalPlayer
+                //if (Game1.IsMasterGame)
                 {
-                    // 计算朝向目标的方向
-                    Vector2 direction = _target.Position - this.position.Value;
-                    if (direction != Vector2.Zero)//子弹和目标不在一个点
+                    // 跟踪逻辑
+                    if (_target != null
+                        && _target.currentLocation == location
+                        && _target.Health > 0)
                     {
-                        direction.Normalize();
-
-                        // 慢拐弯(插值)
-                        xVelocity.Value = MathHelper.Lerp(xVelocity.Value, direction.X * maxTrackSpeed, trackStrength);//1当前速度 2目标速度，3插值比例
-                        yVelocity.Value = MathHelper.Lerp(yVelocity.Value, direction.Y * maxTrackSpeed, trackStrength);
-
-                        // 限制最大速度
-                        float currentSpeed = (float)Math.Sqrt(xVelocity.Value * xVelocity.Value + yVelocity.Value * yVelocity.Value);
-                        if (currentSpeed > maxTrackSpeed)
+                        // 计算朝向目标的方向
+                        Vector2 direction = _target.Position - this.position.Value;
+                        if (direction != Vector2.Zero)//子弹和目标不在一个点
                         {
-                            xVelocity.Value = xVelocity.Value / currentSpeed * maxTrackSpeed;
-                            yVelocity.Value = yVelocity.Value / currentSpeed * maxTrackSpeed;
+                            direction.Normalize();
+
+                            // 慢拐弯(插值)
+                            xVelocity.Value = MathHelper.Lerp(xVelocity.Value, direction.X * maxTrackSpeed, trackStrength);//1当前速度 2目标速度，3插值比例
+                            yVelocity.Value = MathHelper.Lerp(yVelocity.Value, direction.Y * maxTrackSpeed, trackStrength);
+
+                            // 限制最大速度
+                            float currentSpeed = (float)Math.Sqrt(xVelocity.Value * xVelocity.Value + yVelocity.Value * yVelocity.Value);
+                            if (currentSpeed > maxTrackSpeed)
+                            {
+                                xVelocity.Value = xVelocity.Value / currentSpeed * maxTrackSpeed;
+                                yVelocity.Value = yVelocity.Value / currentSpeed * maxTrackSpeed;
+                            }
+                            //限最小速
+                            if (currentSpeed < 1f)
+                            {
+                                xVelocity.Value = direction.X * 1f;
+                                yVelocity.Value = direction.Y * 1f;
+                            }
+                            // 更新旋转角度，使子弹朝向目标
+                            rotation = (float)Math.Atan2(yVelocity.Value, xVelocity.Value) + MathHelper.PiOver2;
+                            //Game1.addHUDMessage(new HUDMessage("怪" + _target));
+                            //Game1.addHUDMessage(new HUDMessage("怪" + _target.Health));
                         }
-                        //限最小速
-                        if (currentSpeed < 1f)
-                        {
-                            xVelocity.Value = direction.X * 1f;
-                            yVelocity.Value = direction.Y * 1f;
-                        }
-                        // 更新旋转角度，使子弹朝向目标
+                    }
+                    else/* if (_target == null || _target.Health <= 0)*/
+                    {
+                        //Game1.addHUDMessage(new HUDMessage("没怪"));
+                        //Monster oldTarget = _target;
+                        // 寻找新目标
+                        FindNewTarget(location);
+                        //if (_target == oldTarget)
+                        //{
+                        //    // 目标没变，跳过重复的 rotation 更新
+                        //}
+                        // 确保旋转角度与当前运动方向一致
+
                         rotation = (float)Math.Atan2(yVelocity.Value, xVelocity.Value) + MathHelper.PiOver2;
-                        //Game1.addHUDMessage(new HUDMessage("怪" + _target));
-                        //Game1.addHUDMessage(new HUDMessage("怪" + _target.Health));
+
                     }
                 }
-                else/* if (_target == null || _target.Health <= 0)*/
-                {
-                   //Game1.addHUDMessage(new HUDMessage("没怪"));
-                    //Monster oldTarget = _target;
-                    // 寻找新目标
-                    FindNewTarget(location);
-                    //if (_target == oldTarget)
-                    //{
-                    //    // 目标没变，跳过重复的 rotation 更新
-                    //}
-                    // 确保旋转角度与当前运动方向一致
-
-                    rotation = (float)Math.Atan2(yVelocity.Value, xVelocity.Value) + MathHelper.PiOver2;
-
-                }
+                //else
+                //{
+                //    rotation = (float)Math.Atan2(yVelocity.Value, xVelocity.Value) + MathHelper.PiOver2;
+                //}
             }
-            //else
-            //{
-            //    rotation = (float)Math.Atan2(yVelocity.Value, xVelocity.Value) + MathHelper.PiOver2;
-            //}
-
+            else
+            {
+                // 非所有者客户端，仅根据同步过来的速度更新朝向，保证渲染正确
+                rotation = (float)Math.Atan2(yVelocity.Value, xVelocity.Value) + MathHelper.PiOver2;
+            }
             return base.update(time, location);
+
         }
 
         private void FindNewTarget(GameLocation location)
