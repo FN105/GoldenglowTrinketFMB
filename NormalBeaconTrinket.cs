@@ -370,8 +370,8 @@ namespace GoldenglowTrinket
                 {
                     InEvent = false;
                 }
-                //重写&& Game1.IsMasterGame
-                if (IsLocal&&!_TingLiu && !_PuGong)
+                //重写&& Game1.IsMasterGame IsLocal&&
+                if (!_TingLiu && !_PuGong)
                 {
                     if (lerp < 0f)
                     {
@@ -452,9 +452,9 @@ namespace GoldenglowTrinket
                 // 周期摆动
                 _rotationAngle1 = SwingAmplitude * (float)Math.Sin(_swingTimer * SwingSpeed);//左边弧度，右边速度
 
-                GongSu = 1300f;//总攻速
+                GongSu = 1300f;//总攻速IsLocal && 
                 if (_ActualDamage == 0) _ActualDamage = (int)(_BaseDamage * BaseMultiplier);
-                if (IsLocal && Game1.shouldTimePass())
+                if (Game1.shouldTimePass())
                 {
                     // 通过 _parent 访问实例方法
                     HashSet<string> ignoreLocations = _parent?.GetIgnoredLocations() ?? new HashSet<string>();
@@ -1241,8 +1241,10 @@ namespace GoldenglowTrinket
 
             private void ShootFireball(GameLocation location, Farmer farmer)
             {
-                //if (!Game1.IsMasterGame)
-                //    return;
+                //if (!Game1.IsMasterGame)//用这个客机发不出子弹
+                //    return; //IsLocal
+                if (!IsLocal)//这里双方看不到对方子弹
+                    return;
                 //Game1.addHUDMessage(new HUDMessage("111"));
                 //Monster target = Utility.findClosestMonsterWithinRange(location, Owner.Position, 1000);
                 if (farmer == null) farmer = Game1.player;

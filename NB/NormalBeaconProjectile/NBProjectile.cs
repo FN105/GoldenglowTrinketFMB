@@ -118,8 +118,8 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
                 if (collisionBehavior != null)
                     collisionBehavior(location, (int)position.Value.X, (int)position.Value.Y, null);
                 //return;
-                if (collisionBehavior != null) //客机端命中特效
-                    collisionBehavior(location, (int)position.Value.X, (int)position.Value.Y, null);
+                //if (collisionBehavior != null) //客机端命中特效
+                //    collisionBehavior(location, (int)position.Value.X, (int)position.Value.Y, null);
             //    location.explode(
             //    new Vector2(position.Value.X / 64, position.Value.Y / 64),
             //    1,
@@ -184,7 +184,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
             float deltaMs = (float)time.ElapsedGameTime.TotalMilliseconds;
             
 
-            if (Game1.IsMasterGame) // 只有主机改速度/目标
+            //if (Game1.IsMasterGame) // 只有主机改速度/目标
             //if()
             {
                 float posDis = Vector2.Distance(position.Value, lastBulletPos);
@@ -193,7 +193,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
                     stayTimer += deltaMs;
 
                     // 停留超过一定时间后飞出去
-                    if (stayTimer >= 50f)
+                    if (stayTimer >= 75f)
                     {
                         //清空旧目标，不再追尸体
                         _target = null;
@@ -238,7 +238,7 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
                 TrackParticles(location);
             }
 
-            if (Game1.IsMasterGame)
+            //if (Game1.IsMasterGame)
             {
                 // 跟踪逻辑
                 if (_target != null
@@ -247,11 +247,11 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
                 {
                     // 计算朝向目标的方向
                     Vector2 direction = _target.Position - this.position.Value;
-                    if (direction != Vector2.Zero)
+                    if (direction != Vector2.Zero)//子弹和目标不在一个点
                     {
                         direction.Normalize();
 
-                        // 应用跟踪力(插值)
+                        // 慢拐弯(插值)
                         xVelocity.Value = MathHelper.Lerp(xVelocity.Value, direction.X * maxTrackSpeed, trackStrength);//1当前速度 2目标速度，3插值比例
                         yVelocity.Value = MathHelper.Lerp(yVelocity.Value, direction.Y * maxTrackSpeed, trackStrength);
 
@@ -290,10 +290,10 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
 
                 }
             }
-            else
-            {
-                rotation = (float)Math.Atan2(yVelocity.Value, xVelocity.Value) + MathHelper.PiOver2;
-            }
+            //else
+            //{
+            //    rotation = (float)Math.Atan2(yVelocity.Value, xVelocity.Value) + MathHelper.PiOver2;
+            //}
 
             return base.update(time, location);
         }
@@ -318,8 +318,8 @@ namespace GoldenglowTrinket.NB.NormalBeaconProjectile
             else
             {
                 // 只在主机端减少穿透次数，客机跟随主机同步
-                piercesLeft.Value = 0;
-                destroyMe = true;
+                piercesLeft.Value --;
+                //destroyMe = true;
 
             }
         }
