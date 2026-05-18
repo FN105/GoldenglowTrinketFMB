@@ -205,29 +205,31 @@ namespace GoldenglowTrinket
             private readonly float _hoverAmplitude = 5f;//浮动大小
             private Vector2 _customOffset;
             private Vector2 _originalOffset;
-            private Vector2 _attackPosition;  // 记录攻击时的位置
-            private Vector2 _leavePosition;  // 记录离开前的位置
-            private bool _TingLiu = false;
+            private readonly NetVector2 _attackPosition = new NetVector2();  // 记录攻击时的位置
+            private readonly NetVector2 _leavePosition = new NetVector2();  // 记录离开前的位置
+            private readonly NetBool _TingLiu = new NetBool(false);
             private float _TingLiuTime;
             private float _PuGongCD;
-            private bool _PuGong = false;
-            //private NetBool _PuGong = new NetBool();//这个111
+            //private bool _PuGong = false;
+            private NetBool _PuGong = new NetBool(false);//这个111
             float _animationTimer = 0f;
             float _animationTimer1 = 0f;
-            private float _rotationAngle;
+            private readonly NetFloat _rotationAngle = new NetFloat();
             private float _rotationAngle1;
-            private bool _isRetreating = false;  // 是否正在后退
-            private float _retreatProgress = 0f; // 缓冲进度
+            //private bool _isRetreating = false;  // 是否正在后退
+            private readonly NetBool _isRetreating = new NetBool(false);
+            private readonly NetFloat _retreatProgress = new NetFloat(0f); // 缓冲进度
             private const float RetreatDuration = 600f; // 缓冲动画总时长（毫秒）
-            private Vector2 _originalAttackPos; // 初始攻击位置
+            private readonly NetVector2 _originalAttackPos = new NetVector2(); // 初始攻击位置
             private Vector2 _retreatOffset = new Vector2(0f, 20f); // 后退偏移量
             private static int _companionCounter = 0;
 
-            private bool _isSpecialAttacking = false;
-            private Vector2 _dashTarget; // 冲刺目标坐标
-            private bool BaoZhaCiShu = true;
-            private bool XiaoShi = false;
-            //private NetBool XiaoShi = new NetBool();//这个111
+            private readonly NetBool _isSpecialAttacking = new NetBool(false);
+            private readonly NetVector2 _dashTarget = new NetVector2(); // 冲刺目标坐标
+            //private bool BaoZhaCiShu = true;
+            private readonly NetBool BaoZhaCiShu = new NetBool(true);
+            //private bool XiaoShi = false;
+            private NetBool XiaoShi = new NetBool(false);//这个111
             private float _swingTimer;      // 摇摆计时器
             private float SwingSpeed = 0.007f;  // 摇摆速度（值越大摆动越快）
             private float SwingAmplitude = 0.04f; // 摇摆幅度（弧度值）
@@ -241,15 +243,15 @@ namespace GoldenglowTrinket
             private Vector2 Offset1 = new Vector2(-5f, -190f);//修正弹道
 
             private float _targetRotation;    // 目标旋转角度
-            private float _currentRotation;   // 当前实际角度
+            private readonly NetFloat _currentRotation = new NetFloat();     // 当前实际角度
             private bool InEvent = false;
             private Vector2 _lastValidPosition;//随从位置
             private Vector2 _lastOwnerPosition;//玩家位置
-            private bool _isRight = false;//随从在右边
+            private readonly NetBool _isRight = new NetBool(false);//随从在右边
             private float SuijiJiaoDu;
             private float SuijiDaXiao;
             private int DianHuZhen;//电弧帧
-            private float _lightningAlpha;      // 当前透明度（0.0-1.0）
+            private readonly NetFloat _lightningAlpha = new NetFloat(0f);// 当前透明度（0.0-1.0）
             private float _PinkAlphaTimer;          // 透明度计时器
             private bool _inSlimeHutch = false;
             private Monster target;
@@ -261,6 +263,7 @@ namespace GoldenglowTrinket
             private float BaseMultiplier=0.2f; // 攻击初始倍率
             private Vector2 _lastPosition;
             private float AllAttackSpeed =0f;   // 信标总攻速
+
             //public readonly NetEvent0 AttackEvent = new NetEvent0();
 
            
@@ -284,6 +287,20 @@ namespace GoldenglowTrinket
             public override void InitNetFields()
             {
                 base.InitNetFields();
+                NetFields.AddField(_TingLiu, nameof(_TingLiu))
+            .AddField(_PuGong, nameof(_PuGong))
+            .AddField(_isSpecialAttacking, nameof(_isSpecialAttacking))
+            .AddField(BaoZhaCiShu, nameof(BaoZhaCiShu))
+            .AddField(XiaoShi, nameof(XiaoShi))
+            .AddField(_isRetreating, nameof(_isRetreating))
+            .AddField(_attackPosition, nameof(_attackPosition))
+            .AddField(_leavePosition, nameof(_leavePosition))
+            .AddField(_originalAttackPos, nameof(_originalAttackPos))
+            .AddField(_dashTarget, nameof(_dashTarget))
+            .AddField(_rotationAngle, nameof(_rotationAngle))
+            .AddField(_currentRotation, nameof(_currentRotation))
+            .AddField(_lightningAlpha, nameof(_lightningAlpha))
+            .AddField(_isRight, nameof(_isRight));
                 //NetFields.AddField(AttackEvent, "AttackEvent");
                 //.AddField(_PuGong, "_PuGong")
                 //.AddField(XiaoShi, "XiaoShi");
@@ -377,7 +394,7 @@ namespace GoldenglowTrinket
                     InEvent = false;
                 }
                 //重写&& Game1.IsMasterGame IsLocal&&
-                if (IsLocal&&!_TingLiu && !_PuGong)
+                if (IsLocal&&!_TingLiu.Value && !_PuGong.Value)
                 {
                     if (lerp < 0f)
                     {
@@ -432,7 +449,7 @@ namespace GoldenglowTrinket
                 }
                 height = 32f;
                 //base.Update(time, location);
-                _nbSelfEffect.UpdateFromCompanion(_fireballOffset, _isRight);
+                _nbSelfEffect.UpdateFromCompanion(_fireballOffset, _isRight.Value);
                 _BaseDamage =120;
                 BaseMultiplier = GetEnhancedBaseDamage();
                 _animationTimer += (float)time.ElapsedGameTime.TotalMilliseconds;
@@ -460,7 +477,7 @@ namespace GoldenglowTrinket
 
                 GongSu = 1300f;//总攻速IsLocal && 
                 if (_ActualDamage == 0) _ActualDamage = (int)(_BaseDamage * BaseMultiplier);
-                if (Game1.shouldTimePass())
+                if (Game1.shouldTimePass()&& IsLocal)
                 {
                     // 通过 _parent 访问实例方法
                     HashSet<string> ignoreLocations = _parent?.GetIgnoredLocations() ?? new HashSet<string>();
@@ -486,10 +503,10 @@ namespace GoldenglowTrinket
                     {
 
                         MonsterTime = 0f;
-                        if (_TingLiu && !_isSpecialAttacking)
+                        if (_TingLiu.Value && !_isSpecialAttacking.Value)
                         {
                             //缓冲动画
-                            if (_isRetreating)
+                            if (_isRetreating.Value)
                             {
                                 float deltaTime = (float)time.ElapsedGameTime.TotalSeconds;
 
@@ -505,42 +522,56 @@ namespace GoldenglowTrinket
                                 if (_PinkAlphaTimer <= FadeInTime)
                                 {
                                     // 淡入阶段 
-                                    _lightningAlpha = _PinkAlphaTimer / FadeInTime;
+                                    _lightningAlpha.Value = _PinkAlphaTimer / FadeInTime;
                                 }
                                 else if (_PinkAlphaTimer <= FadeInTime + StayTime)
                                 {
                                     // 保持阶段 
-                                    _lightningAlpha = 1f;
+                                    _lightningAlpha.Value = 1f;
                                 }
                                 else
                                 {
                                     // 淡出阶段 
                                     float fadeOutProgress = (_PinkAlphaTimer - FadeInTime - StayTime) / FadeOutTime;
-                                    _lightningAlpha = 1f - fadeOutProgress;
+                                    _lightningAlpha.Value = 1f - fadeOutProgress;
                                 }
-                                _retreatProgress += (float)time.ElapsedGameTime.TotalMilliseconds / RetreatDuration;
+                                _retreatProgress.Value += (float)time.ElapsedGameTime.TotalMilliseconds / RetreatDuration;
 
 
-                                if (_retreatProgress <= 2f)
+                                if (_retreatProgress.Value <= 2f)
                                 {
                                     // 后退阶段（0-1）：从初始位置向后退
-                                    float t = _retreatProgress;
-                                    Position = _originalAttackPos + _retreatOffset * (float)Math.Sin(t * Math.PI);
+                                    float t = _retreatProgress.Value;
+                                    Position = _originalAttackPos.Value + _retreatOffset * (float)Math.Sin(t * Math.PI);
                                 }
                             }
                             _TingLiuTime += (float)time.ElapsedGameTime.TotalMilliseconds;
                             //Position = _attackPosition;
                             if (_TingLiuTime > 600f / timeScale)
                             {
-                                _TingLiu = false;
+                                _TingLiu.Value = false;
                                 _TingLiuTime = 0f;
-                                _PuGong = true; // 进入等待 0.8s 状态(如果_PuGong= true，那么饰品就会消失0.8s)
-                                _nbSelfEffect.AddDisappearEffect(location, _attackPosition);
+                                _PuGong.Value = true; // 进入等待 0.8s 状态(如果_PuGong= true，那么饰品就会消失0.8s)
+                                _nbSelfEffect.AddDisappearEffect(location, _attackPosition.Value);
+                                if (this.Owner?.IsLocalPlayer ?? false)
+                                {
+                                    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                        message: new ModEntry.SelfEffectMessage
+                                        {
+                                            EffectType = "AddDisappearEffect",
+                                            X = _attackPosition.Value.X,
+                                            Y = _attackPosition.Value.Y,
+                                            LocationName = location.Name
+                                        },
+                                        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                    );
+                                }
                                 location.playSound("Goldenglow_BeaconFade");
                             }
                         }
                         //特殊自爆攻击
-                        else if (_TingLiu && _isSpecialAttacking)
+                        else if (_TingLiu.Value && _isSpecialAttacking.Value)
                         {
                             float deltaTime = (float)time.ElapsedGameTime.TotalSeconds;
 
@@ -556,33 +587,33 @@ namespace GoldenglowTrinket
                             if (_PinkAlphaTimer <= FadeInTime)
                             {
                                 // 淡入阶段 
-                                _lightningAlpha = _PinkAlphaTimer / FadeInTime;
+                                _lightningAlpha.Value = _PinkAlphaTimer / FadeInTime;
                             }
                             else if (_PinkAlphaTimer <= FadeInTime + StayTime)
                             {
                                 // 保持阶段 
-                                _lightningAlpha = 1f;
+                                _lightningAlpha.Value = 1f;
                             }
                             else
                             {
                                 // 淡出阶段 
                                 float fadeOutProgress = (_PinkAlphaTimer - FadeInTime - StayTime) / FadeOutTime;
-                                _lightningAlpha = 1f - fadeOutProgress;
+                                _lightningAlpha.Value = 1f - fadeOutProgress;
                             }
                             //缓冲动画
                             _TingLiuTime += (float)time.ElapsedGameTime.TotalMilliseconds;
 
                             if (_TingLiuTime >= 0f && _TingLiuTime < 300f / timeScale)
                             {
-                                if (_isRetreating)
+                                if (_isRetreating.Value)
                                 {
-                                    _retreatProgress += (float)time.ElapsedGameTime.TotalMilliseconds / RetreatDuration;
+                                    _retreatProgress.Value += (float)time.ElapsedGameTime.TotalMilliseconds / RetreatDuration;
 
                                     // if (_retreatProgress <= 1f)
                                     //{
                                     // 后退阶段（0-1）：从初始位置向后退
-                                    float t = _retreatProgress;
-                                    Position = _originalAttackPos + _retreatOffset * (float)Math.Sin(t * Math.PI);
+                                    float t = _retreatProgress.Value;
+                                    Position = _originalAttackPos.Value + _retreatOffset * (float)Math.Sin(t * Math.PI);
                                     //}
 
                                 }
@@ -594,13 +625,13 @@ namespace GoldenglowTrinket
                                 // 获取当前目标位置
                                 Vector2 currentTargetPos = (_specialTarget != null && _specialTarget.Health > 0)
                                     ? _specialTarget.Position + new Vector2(10f, 0f)  // 瞄准怪物中心偏上
-                                    : _dashTarget + new Vector2(0f, -128f);  // 如果怪物死亡，使用最后记录的位置
+                                    : _dashTarget.Value + new Vector2(0f, -128f);  // 如果怪物死亡，使用最后记录的位置
 
 
                                 Vector2 fireballStartPos = Position + _fireballOffset + Offset1;
                                 Vector2 motion = Utility.getVelocityTowardPoint(fireballStartPos, currentTargetPos, 10f);
 
-                                _rotationAngle = (float)Math.Atan2(motion.Y, motion.X) + MathHelper.PiOver2 - MathHelper.Pi;
+                                _rotationAngle.Value = (float)Math.Atan2(motion.Y, motion.X) + MathHelper.PiOver2 - MathHelper.Pi;
 
                                 //  检查信标和怪物位置是否接近重合
                                 float positionDifference = Math.Abs(Position.X - currentTargetPos.X) + Math.Abs(Position.Y - currentTargetPos.Y-150f);
@@ -610,7 +641,7 @@ namespace GoldenglowTrinket
                                 // 如果位置接近重合，触发爆炸
                                 if (positionDifference < 75f) // 容差范围
                                 {
-                                    if (BaoZhaCiShu)
+                                    if (BaoZhaCiShu.Value)
                                     {
                                         Vector2 explosionTile = new Vector2(Position.X / 64, Position.Y / 64 - 2);
                                         Vector2 explosionCenter = new Vector2(Position.X + 32, Position.Y - 96);
@@ -625,8 +656,8 @@ namespace GoldenglowTrinket
                                             !(location is Farm) && !(location is SlimeHutch)
                                         );
                                         location.playSound("Goldenglow_Boom");
-                                        BaoZhaCiShu = false;
-                                        XiaoShi = true;
+                                        BaoZhaCiShu.Value = false;
+                                        XiaoShi.Value = true;
                                     }
                                 }
                                 else
@@ -645,13 +676,13 @@ namespace GoldenglowTrinket
                                 
                             }
                             //Position = _attackPosition;
-                            if (_TingLiuTime > 600f / timeScale && !BaoZhaCiShu)
+                            if (_TingLiuTime > 600f / timeScale && !BaoZhaCiShu.Value)
                             {
-                                _TingLiu = false;
+                                _TingLiu.Value = false;
                                 _TingLiuTime = 0f;
-                                BaoZhaCiShu = true;
-                                _PuGong= true; // 进入等待 0.7s 状态(如果_PuGong= true，那么饰品就会消失0.7s)
-                                if (!XiaoShi)
+                                BaoZhaCiShu.Value = true;
+                                _PuGong.Value = true; // 进入等待 0.7s 状态(如果_PuGong= true，那么饰品就会消失0.7s)
+                                if (!XiaoShi.Value)
                                 {
                                     //_nbSelfEffect.AddDisappearEffect(location, _attackPosition);//消失
                                 }
@@ -662,16 +693,16 @@ namespace GoldenglowTrinket
                         }
 
                         //消失
-                        else if (_PuGong)
+                        else if (_PuGong.Value)
                         {
                             _PuGongCD += (float)time.ElapsedGameTime.TotalMilliseconds;
                             if (_PuGongCD > 700f / timeScale)
                             {
                                 _PuGongCD = 0f;
-                                _PuGong = false;
-                                XiaoShi = false;
-                                _isSpecialAttacking = false;
-                                BaoZhaCiShu = true;
+                                _PuGong.Value = false;
+                                XiaoShi.Value = false;
+                                _isSpecialAttacking.Value = false;
+                                BaoZhaCiShu.Value = true;
                                 if (TeShuGongJiGaiLv >= 0.3f)
                                 {
                                     //Game1.addHUDMessage(new HUDMessage("保底"));
@@ -685,8 +716,8 @@ namespace GoldenglowTrinket
                                     //_minDamage = 24;
                                     //_maxDamage = 32;
                                     //Game1.addHUDMessage(new HUDMessage("重置概率"));
-                                    _TingLiu = true;
-                                    _isSpecialAttacking = true;
+                                    _TingLiu.Value = true;
+                                    _isSpecialAttacking.Value = true;
                                     StartSpecialAttack(target, location);
 
                                 }
@@ -694,7 +725,7 @@ namespace GoldenglowTrinket
                                 {// 电流
                                     TeShuGongJiGaiLv += 0.015f;
                                     //Game1.addHUDMessage(new HUDMessage("下次攻击暴击的概率="+ TeShuGongJiGaiLv));
-                                    _TingLiu = true;
+                                    _TingLiu.Value = true;
                                     //AttackEvent.Fire();
                                     StartAttackSequence(target, location);
                                     //Game1.addHUDMessage(new HUDMessage("当前伤害：" + _ActualDamage));
@@ -706,7 +737,7 @@ namespace GoldenglowTrinket
                                     }
 
                                 }
-                                _TingLiu = true; // 进入停留 0.5s 状态
+                                _TingLiu.Value = true; // 进入停留 0.5s 状态
                             }
                         }
                         //启动
@@ -716,11 +747,25 @@ namespace GoldenglowTrinket
                             {
                                 TeShuGongJiGaiLv = 0.015f;
                                 //Game1.addHUDMessage(new HUDMessage("重置概率"));
-                                _TingLiu = true;
-                                _isSpecialAttacking = true;
+                                _TingLiu.Value = true;
+                                _isSpecialAttacking.Value = true;
                                 StartSpecialAttack(target, location);
-                                _isRight = false;
-                                _nbSelfEffect.AddDisappearEffect(location, _leavePosition);
+                                _isRight.Value = false;
+                                _nbSelfEffect.AddDisappearEffect(location, _leavePosition.Value);
+                                if (this.Owner?.IsLocalPlayer ?? false)
+                                {
+                                    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                        message: new ModEntry.SelfEffectMessage
+                                        {
+                                            EffectType = "AddDisappearEffect",
+                                            X = _leavePosition.Value.X,
+                                            Y = _leavePosition.Value.Y,
+                                            LocationName = location.Name
+                                        },
+                                        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                    );
+                                }
                                 _ActualDamage = (int)(_BaseDamage * BaseMultiplier);
                                 //_minDamage = 24;
                                 //_maxDamage = 32;
@@ -729,11 +774,25 @@ namespace GoldenglowTrinket
                             {// 电流
                                 TeShuGongJiGaiLv += 0.015f;
                                 //Game1.addHUDMessage(new HUDMessage("下次攻击暴击概率=" + TeShuGongJiGaiLv));
-                                _TingLiu = true;
+                                _TingLiu.Value = true;
                                 //AttackEvent.Fire();
                                 StartAttackSequence(target, location);
-                                _isRight = false;
-                                _nbSelfEffect.AddDisappearEffect(location, _leavePosition);
+                                _isRight.Value = false;
+                                _nbSelfEffect.AddDisappearEffect(location, _leavePosition.Value);
+                                if (this.Owner?.IsLocalPlayer ?? false)
+                                {
+                                    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                        message: new ModEntry.SelfEffectMessage
+                                        {
+                                            EffectType = "AddDisappearEffect",
+                                            X = _leavePosition.Value.X,
+                                            Y = _leavePosition.Value.Y,
+                                            LocationName = location.Name
+                                        },
+                                        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                    );
+                                }
                                 //Game1.addHUDMessage(new HUDMessage("当前伤害：" + _ActualDamage));
                                 _ActualDamage += (int)(_BaseDamage * 0.15);
                                 //_minDamage += 18;
@@ -750,7 +809,7 @@ namespace GoldenglowTrinket
                     { // 复位
                       //Position = Owner.Position + _originalOffset;
                         _inSlimeHutch = false;
-                        if (!_TingLiu || !_PuGong)
+                        if (!_TingLiu.Value || !_PuGong.Value)
                         {
                             MonsterTime += (float)time.ElapsedGameTime.TotalMilliseconds;
                             if (MonsterTime >= 3000)
@@ -760,9 +819,9 @@ namespace GoldenglowTrinket
                                 MonsterTime = 0f;
                                 // Game1.addHUDMessage(new HUDMessage("脱战超过三秒，累加效果消失"));
                             }
-                            if (!_TingLiu)
+                            if (!_TingLiu.Value)
                             {
-                                _rotationAngle = 0f;
+                                _rotationAngle.Value = 0f;
                                 //Game1.addHUDMessage(new HUDMessage("这是1"));
                             }
                             if (Owner != null)
@@ -801,7 +860,7 @@ namespace GoldenglowTrinket
                                     }
 
                                     // 平滑插值当前角度
-                                    _currentRotation = MathHelper.Lerp(_currentRotation, _targetRotation, 0.2f);
+                                    _currentRotation.Value = MathHelper.Lerp(_currentRotation.Value, _targetRotation, 0.2f);
                                     // 记录当前位置供下一帧比较
                                     _lastPosition = Position;
                                 }
@@ -810,10 +869,10 @@ namespace GoldenglowTrinket
                                 _lastOwnerPosition = Owner.Position;
                             }
                         }
-                        if (_TingLiu && !_isSpecialAttacking)
+                        if (_TingLiu.Value && !_isSpecialAttacking.Value)
                         {
 
-                            if (_isRetreating)
+                            if (_isRetreating.Value)
                             {
                                 float deltaTime = (float)time.ElapsedGameTime.TotalSeconds;
 
@@ -829,25 +888,25 @@ namespace GoldenglowTrinket
                                 if (_PinkAlphaTimer <= FadeInTime)
                                 {
                                     // 淡入阶段 
-                                    _lightningAlpha = _PinkAlphaTimer / FadeInTime;
+                                    _lightningAlpha.Value = _PinkAlphaTimer / FadeInTime;
                                 }
                                 else if (_PinkAlphaTimer <= FadeInTime + StayTime)
                                 {
                                     // 保持阶段 
-                                    _lightningAlpha = 1f;
+                                    _lightningAlpha.Value = 1f;
                                 }
                                 else
                                 {
                                     // 淡出阶段 
                                     float fadeOutProgress = (_PinkAlphaTimer - FadeInTime - StayTime) / FadeOutTime;
-                                    _lightningAlpha = 1f - fadeOutProgress;
+                                    _lightningAlpha.Value = 1f - fadeOutProgress;
                                 }
-                                _retreatProgress += (float)time.ElapsedGameTime.TotalMilliseconds / RetreatDuration;
-                                if (_retreatProgress <= 1f)
+                                _retreatProgress.Value += (float)time.ElapsedGameTime.TotalMilliseconds / RetreatDuration;
+                                if (_retreatProgress.Value <= 1f)
                                 {
                                     // 后退阶段 
-                                    float t = _retreatProgress;
-                                    Position = _originalAttackPos + _retreatOffset * (float)Math.Sin(t * Math.PI);
+                                    float t = _retreatProgress.Value;
+                                    Position = _originalAttackPos.Value + _retreatOffset * (float)Math.Sin(t * Math.PI);
                                 }
 
                             }
@@ -855,14 +914,28 @@ namespace GoldenglowTrinket
                             //Position = _attackPosition;
                             if (_TingLiuTime > 600f / timeScale)
                             {
-                                _PuGong = true;
-                                _nbSelfEffect.AddDisappearEffect(location, _attackPosition);
-                                _TingLiu = false;
+                                _PuGong.Value = true;
+                                _nbSelfEffect.AddDisappearEffect(location, _attackPosition.Value);
+                                if (this.Owner?.IsLocalPlayer ?? false)
+                                {
+                                    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                        message: new ModEntry.SelfEffectMessage
+                                        {
+                                            EffectType = "AddDisappearEffect",
+                                            X = _attackPosition.Value.X,
+                                            Y = _attackPosition.Value.Y,
+                                            LocationName = location.Name
+                                        },
+                                        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                    );
+                                }
+                                _TingLiu.Value = false;
                                 _TingLiuTime = 0f;
                             }
                         }
                         //特殊自爆攻击
-                        else if (_TingLiu && _isSpecialAttacking)
+                        else if (_TingLiu.Value && _isSpecialAttacking.Value)
                         {
                             //缓冲动画
                             float deltaTime = (float)time.ElapsedGameTime.TotalSeconds;
@@ -879,32 +952,32 @@ namespace GoldenglowTrinket
                             if (_PinkAlphaTimer <= FadeInTime)
                             {
                                 // 淡入阶段 
-                                _lightningAlpha = _PinkAlphaTimer / FadeInTime;
+                                _lightningAlpha.Value = _PinkAlphaTimer / FadeInTime;
                             }
                             else if (_PinkAlphaTimer <= FadeInTime + StayTime)
                             {
                                 // 保持阶段 
-                                _lightningAlpha = 1f;
+                                _lightningAlpha.Value = 1f;
                             }
                             else
                             {
                                 // 淡出阶段 
                                 float fadeOutProgress = (_PinkAlphaTimer - FadeInTime - StayTime) / FadeOutTime;
-                                _lightningAlpha = 1f - fadeOutProgress;
+                                _lightningAlpha.Value = 1f - fadeOutProgress;
                             }
                             _TingLiuTime += (float)time.ElapsedGameTime.TotalMilliseconds;
 
                             if (_TingLiuTime >= 0f && _TingLiuTime < 300f / timeScale)
                             {
-                                if (_isRetreating)
+                                if (_isRetreating.Value)
                                 {
-                                    _retreatProgress += (float)time.ElapsedGameTime.TotalMilliseconds / RetreatDuration;
+                                    _retreatProgress.Value += (float)time.ElapsedGameTime.TotalMilliseconds / RetreatDuration;
 
                                     // if (_retreatProgress <= 1f)
                                     //{
                                     // 后退阶段 
-                                    float t = _retreatProgress;
-                                    Position = _originalAttackPos + _retreatOffset * (float)Math.Sin(t * Math.PI);
+                                    float t = _retreatProgress.Value;
+                                    Position = _originalAttackPos.Value + _retreatOffset * (float)Math.Sin(t * Math.PI);
                                     //}
 
                                 }
@@ -916,13 +989,13 @@ namespace GoldenglowTrinket
                                 // 获取当前目标位置
                                 Vector2 currentTargetPos = (_specialTarget != null && _specialTarget.Health > 0)
                                     ? _specialTarget.Position + new Vector2(10f, 0f)  // 瞄准怪物中心偏上
-                                    : _dashTarget + new Vector2(0f, -128f);  // 如果怪物死亡，使用最后记录的位置
+                                    : _dashTarget.Value + new Vector2(0f, -128f);  // 如果怪物死亡，使用最后记录的位置
 
                                 //  
                                 Vector2 fireballStartPos = Position + _fireballOffset + Offset1;
                                 Vector2 motion = Utility.getVelocityTowardPoint(fireballStartPos, currentTargetPos, 10f);
 
-                                _rotationAngle = (float)Math.Atan2(motion.Y, motion.X) + MathHelper.PiOver2 - MathHelper.Pi;
+                                _rotationAngle.Value = (float)Math.Atan2(motion.Y, motion.X) + MathHelper.PiOver2 - MathHelper.Pi;
 
                                 //  检查信标和怪物位置是否接近重合
                                 float positionDifference = Math.Abs(Position.X - currentTargetPos.X) + Math.Abs(Position.Y - currentTargetPos.Y - 150f);
@@ -932,7 +1005,7 @@ namespace GoldenglowTrinket
                                 // 如果位置接近重合，触发爆炸
                                 if (positionDifference < 75f) // 容差范围
                                 {
-                                    if (BaoZhaCiShu)
+                                    if (BaoZhaCiShu.Value)
                                     {
                                         Vector2 explosionTile = new Vector2(Position.X / 64, Position.Y / 64 - 2);
                                         Vector2 explosionCenter = new Vector2(Position.X + 32, Position.Y - 96);
@@ -947,8 +1020,8 @@ namespace GoldenglowTrinket
                                             !(location is Farm) && !(location is SlimeHutch)
                                         );
                                         location.playSound("Goldenglow_Boom");
-                                        BaoZhaCiShu = false;
-                                        XiaoShi = true;
+                                        BaoZhaCiShu.Value = false;
+                                        XiaoShi.Value = true;
                                     }
                                 }
                                 else
@@ -967,13 +1040,13 @@ namespace GoldenglowTrinket
 
                             }
                             //Position = _attackPosition;
-                            if (_TingLiuTime > 600f / timeScale && !BaoZhaCiShu)
+                            if (_TingLiuTime > 600f / timeScale && !BaoZhaCiShu.Value)
                             {
-                                _TingLiu = false;
+                                _TingLiu.Value = false;
                                 _TingLiuTime = 0f;
-                                BaoZhaCiShu = true;
-                                _PuGong = true; // 进入等待 0.7s 状态(如果_PuGong= true，那么饰品就会消失0.7s)
-                                if (!XiaoShi)
+                                BaoZhaCiShu.Value = true;
+                                _PuGong.Value = true; // 进入等待 0.7s 状态(如果_PuGong= true，那么饰品就会消失0.7s)
+                                if (!XiaoShi.Value)
                                 {
                                     //_nbSelfEffect.AddDisappearEffect(location, _attackPosition);//消失
                                 }
@@ -982,16 +1055,16 @@ namespace GoldenglowTrinket
                             }
                         }
                         //消失
-                        else if (_PuGong)
+                        else if (_PuGong.Value)
                         {
                             _PuGongCD += (float)time.ElapsedGameTime.TotalMilliseconds;
                             if (_PuGongCD > 700f / timeScale)
                             {
-                                BaoZhaCiShu = true;
-                                _PuGong = false;
-                                XiaoShi = false;
+                                BaoZhaCiShu.Value = true;
+                                _PuGong.Value = false;
+                                XiaoShi.Value = false;
                                 _PuGongCD = 0f;
-                                _isSpecialAttacking = false;
+                                _isSpecialAttacking.Value = false;
                                 lerp = -1f;
                                 //Position = _leavePosition;
                                 if (Owner != null)
@@ -1008,11 +1081,39 @@ namespace GoldenglowTrinket
                                     //Game1.addHUDMessage(new HUDMessage("位置" + Position));
                                      
                                     _nbSelfEffect.AddAppearEffect(location, Position);
+                                    if (this.Owner?.IsLocalPlayer ?? false)
+                                    {
+                                        ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                            message: new ModEntry.SelfEffectMessage
+                                            {
+                                                EffectType = "AddAppearEffect",
+                                                X = Position.X,
+                                                Y = Position.Y,
+                                                LocationName = location.Name
+                                            },
+                                            messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                            playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                        );
+                                    }
                                 }
                                 else
                                 {
                                     // 使用原来的位置
                                     _nbSelfEffect.AddAppearEffect(location, Position);
+                                    if (this.Owner?.IsLocalPlayer ?? false)
+                                    {
+                                        ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                            message: new ModEntry.SelfEffectMessage
+                                            {
+                                                EffectType = "AddAppearEffect",
+                                                X = Position.X,
+                                                Y = Position.Y,
+                                                LocationName = location.Name
+                                            },
+                                            messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                            playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                        );
+                                    }
                                 }
                                 //Position = Owner.Position + _originalOffset;
 
@@ -1020,19 +1121,33 @@ namespace GoldenglowTrinket
                             }
                         }
                     }
-                    if (target == null && !_PuGong && !(_TingLiu && _isSpecialAttacking))
+                    if (target == null && !_PuGong.Value && !(_TingLiu.Value && _isSpecialAttacking.Value))
                     {
                         _dailyParticleTimer += (float)time.ElapsedGameTime.TotalMilliseconds;
                         if (_dailyParticleTimer >= 250f)
                         {
                             //Game1.addHUDMessage(new HUDMessage("日常特效"));
                             _nbSelfEffect.AddCasualParticles(location, Position);
+                            if (this.Owner?.IsLocalPlayer ?? false)
+                            {
+                                ModEntry.StaticHelper.Multiplayer.SendMessage(
+                                    message: new ModEntry.SelfEffectMessage
+                                    {
+                                        EffectType = "AddCasualParticles",
+                                        X = Position.X,
+                                        Y = Position.Y,
+                                        LocationName = location.Name
+                                    },
+                                    messageType: "GoldenglowTrinket/PlaySelfEffect",
+                                    playerIDs: Game1.otherFarmers.Keys.ToArray()
+                                );
+                            }
                             _dailyParticleTimer = 0f;
 
                         }
                     }
                 }
-                else if (_TingLiu)
+                else if (_TingLiu.Value)
                 {
                     //Position = _attackPosition;
                 }
@@ -1043,19 +1158,19 @@ namespace GoldenglowTrinket
                 //if (_PuGong || _TingLiu) return;
                 //if (!Game1.IsMasterGame) return;
                 //离开前的位置
-                _leavePosition = Position;
+                _leavePosition.Value = Position;
 
                 //初始出现位置
-                _attackPosition = target.Position + new Vector2(
+                _attackPosition.Value = target.Position + new Vector2(
                     (float)(Math.Cos(Game1.random.NextDouble() * Math.PI) * 100f),
                     (float)(Math.Sin(Game1.random.NextDouble() * Math.PI) * 100f - 90f)
                 );
                 //Game1.addHUDMessage(new HUDMessage("怪的位置：" + _rotationAngle));
                 // 使用存储的位置
-                Position = _attackPosition;
-                _originalAttackPos = _attackPosition; // 记录初始位置
-                _isRetreating = true; // 开始缓冲动画
-                _retreatProgress = 0f; // 重置进度
+                Position = _attackPosition.Value;
+                _originalAttackPos.Value = _attackPosition.Value; // 记录初始位置
+                _isRetreating.Value = true; // 开始缓冲动画
+                _retreatProgress.Value = 0f; // 重置进度
 
                 Vector2 fireballStartPos = Position + _fireballOffset + Offset1;
                 Vector2 motion = Utility.getVelocityTowardPoint(fireballStartPos, target.Position, 10f);
@@ -1068,23 +1183,37 @@ namespace GoldenglowTrinket
                 ////Game1.addHUDMessage(new HUDMessage("角度："+ angle));
 
                 //朝向怪物角度
-                _rotationAngle = projectileRotation;
+                _rotationAngle.Value = projectileRotation;
                 //Game1.addHUDMessage(new HUDMessage("随从的角度：" + _rotationAngle));
-                if (_rotationAngle >= 0.08)
+                if (_rotationAngle.Value >= 0.08)
                 {
-                    _isRight = true;
+                    _isRight.Value = true;
                 }
                 else
                 {
-                    _isRight = false;
+                    _isRight.Value = false;
                 }
                 //缓冲角度
-                float angle1 = _rotationAngle - MathHelper.PiOver2;   
+                float angle1 = _rotationAngle.Value - MathHelper.PiOver2;   
                 _retreatOffset = new Vector2(
                     (float)Math.Cos(angle1) * 15f, // 负数表示反向（后退）
                     (float)Math.Sin(angle1) * 15f
                 );
                 _nbSelfEffect.AddAppearEffect(location, Position);//出现特效
+                if (this.Owner?.IsLocalPlayer ?? false)
+                {
+                    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                        message: new ModEntry.SelfEffectMessage
+                        {
+                            EffectType = "AddAppearEffect",
+                            X = Position.X,
+                            Y = Position.Y,
+                            LocationName = location.Name
+                        },
+                        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                    );
+                }
                 // 发起攻击
                 ShootFireball(location, Owner);
 
@@ -1093,18 +1222,18 @@ namespace GoldenglowTrinket
             {
                 //if (!Game1.IsMasterGame) return;
                 //离开前的位置
-                _leavePosition = Position;
+                _leavePosition.Value = Position;
 
                 //初始出现位置
-                _attackPosition = target.Position + new Vector2(
+                _attackPosition.Value = target.Position + new Vector2(
                     (float)(Math.Cos(Game1.random.NextDouble() * Math.PI) * 100f),
                     (float)(Math.Sin(Game1.random.NextDouble() * Math.PI) * 100f - 90f)
                 );
                 // 使用存储的位置
-                Position = _attackPosition;
-                _originalAttackPos = _attackPosition; // 记录初始位置
-                _isRetreating = true; // 开始缓冲动画
-                _retreatProgress = 0f; // 重置进度
+                Position = _attackPosition.Value;
+                _originalAttackPos.Value = _attackPosition.Value; // 记录初始位置
+                _isRetreating.Value = true; // 开始缓冲动画
+                _retreatProgress.Value = 0f; // 重置进度
                 // 计算从随从到怪物的向量
                 //Vector2 directionToMonster = target.Position - Position;
 
@@ -1118,21 +1247,35 @@ namespace GoldenglowTrinket
                 //怪的位置+手动偏移
                 //Vector2 _dashTarget1 = new Vector2(motion.Y, motion.X);
                 Vector2 _dashTarget2 = new Vector2(0f, 128f);
-                _dashTarget = target.Position + _dashTarget2;
+                _dashTarget.Value = target.Position + _dashTarget2;
                 _specialTarget= target;
                 //Game1.addHUDMessage(new HUDMessage("怪的位置："+ target.Position));
 
                 //朝向怪物角度
-                _rotationAngle = projectileRotation;
+                _rotationAngle.Value = projectileRotation;
 
                 //缓冲角度
-                float angle1 = _rotationAngle - MathHelper.PiOver2; ////  
+                float angle1 = _rotationAngle.Value - MathHelper.PiOver2; ////  
                 _retreatOffset = new Vector2(
                     (float)Math.Cos(angle1) * 15f, // 负数表示反向（后退）
                     (float)Math.Sin(angle1) * 15f
                 );
 
                 _nbSelfEffect.AddAppearEffect(location, Position);//出现特效
+                if (this.Owner?.IsLocalPlayer ?? false)
+                {
+                    ModEntry.StaticHelper.Multiplayer.SendMessage(
+                        message: new ModEntry.SelfEffectMessage
+                        {
+                            EffectType = "AddAppearEffect",
+                            X = Position.X,
+                            Y = Position.Y,
+                            LocationName = location.Name
+                        },
+                        messageType: "GoldenglowTrinket/PlaySelfEffect",
+                        playerIDs: Game1.otherFarmers.Keys.ToArray()
+                    );
+                }
                 // 发起攻击
                 //ShootFireball(location, Owner);
 
@@ -1150,7 +1293,7 @@ namespace GoldenglowTrinket
                 if (Owner == null)
                  return;
                 // 冷却期间不绘制
-                if (_PuGong || XiaoShi || InEvent) return;
+                if (_PuGong.Value || XiaoShi.Value || InEvent) return;
                 // 不是节日活动期间
                 if (Owner?.currentLocation == null ||
                     Owner.currentLocation.DisplayName == "Temp" && !Game1.isFestival())
@@ -1173,10 +1316,10 @@ namespace GoldenglowTrinket
                 Texture2D BeaconGroupCurrent1 = Game1.content.Load<Texture2D>("Mods/Goldenglow_OtherBeaconGroupCurrent");
                 // Vector2 _fireballOffset1 = new Vector2(-50f, -148f);
                 Vector2 _CurrentOffset1 = new Vector2(0f, 10f);
-                float combinedRotation = _rotationAngle1 + _currentRotation; // 组合浮动和移动旋转
-                float combinedRotation1 = _rotationAngle1 + _currentRotation + SuijiJiaoDu; // 组合浮动和移动旋转
+                float combinedRotation = _rotationAngle1 + _currentRotation.Value; // 组合浮动和移动旋转
+                float combinedRotation1 = _rotationAngle1 + _currentRotation.Value + SuijiJiaoDu; // 组合浮动和移动旋转
                 //这是打怪的时候
-                if (_TingLiu)
+                if (_TingLiu.Value)
                 {
                     Vector2 finalPosition = Position + _fireballOffset;
                     b.Draw(
@@ -1184,7 +1327,7 @@ namespace GoldenglowTrinket
                           Game1.GlobalToLocal(finalPosition + Owner.drawOffset + new Vector2(0f, (0f - height) * 4f) + new Vector2(0f, 0f - height)),
                            new Rectangle(currentFrame * frameWidth, 0, frameWidth, frameHeight),
                           Color.White,
-                          _rotationAngle,
+                          _rotationAngle.Value,
                           new Vector2(8f, 8f),
                           1.7f,
                           SpriteEffects.None,
@@ -1196,7 +1339,7 @@ namespace GoldenglowTrinket
                           Game1.GlobalToLocal(finalPosition + Owner.drawOffset + new Vector2(0f, (0f - height) * 4f) + new Vector2(0f, 0f - height)),//位置
                            new Rectangle(DianHuZhen, 0, frameWidth, frameHeight),//帧
                           Color.White,
-                          _rotationAngle,
+                          _rotationAngle.Value,
                           new Vector2(8f, 8f),
                           1.7f,
                           SpriteEffects.None,
@@ -1207,8 +1350,8 @@ namespace GoldenglowTrinket
                           Pinktexture,
                           Game1.GlobalToLocal(finalPosition + Owner.drawOffset + new Vector2(0f, (0f - height) * 4f) + new Vector2(0f, 0f - height)),
                            new Rectangle(0, 0, 32, 32),
-                          Color.White * _lightningAlpha,
-                          _rotationAngle,
+                          Color.White * _lightningAlpha.Value,
+                          _rotationAngle.Value,
                           new Vector2(8f, 8f),
                           1.7f,
                           SpriteEffects.None,

@@ -22,6 +22,13 @@ namespace GoldenglowTrinket
             public float Y { get; set; }           // 特效Y坐标
             public string LocationName { get; set; }
         }
+        public class SelfEffectMessage
+        {
+            public string EffectType { get; set; } // "explosion" 或 "special"
+            public float X { get; set; }           // 特效X坐标
+            public float Y { get; set; }           // 特效Y坐标
+            public string LocationName { get; set; }
+        }
         public class FireballSyncMessage
         {
             public string LocationName { get; set; }
@@ -58,6 +65,27 @@ namespace GoldenglowTrinket
                 else if (msg.EffectType == "special")
                 {
                     hitEffect.CreateSpecialExplosion(location, position);
+                }
+            }else if(e.Type == "GoldenglowTrinket/PlaySelfEffect")
+            {
+                SelfEffectMessage msg = e.ReadAs<SelfEffectMessage>();
+                Vector2 position = new Vector2(msg.X, msg.Y);
+                GameLocation location = Game1.currentLocation;
+                if (location == null || location.Name != msg.LocationName)
+                    return;
+
+                var SelfEffect = new NBSelfEffect();
+                if (msg.EffectType == "AddDisappearEffect")
+                {
+                    SelfEffect.AddDisappearEffect(location, position);
+                }
+                else if (msg.EffectType == "AddAppearEffect")//AddCasualParticles
+                {
+                    SelfEffect.AddAppearEffect(location, position);
+                }
+                else if (msg.EffectType == "AddCasualParticles")//AddCasualParticles
+                {
+                    SelfEffect.AddCasualParticles(location, position);
                 }
             }
             else if (e.Type == "GoldenglowTrinket/SyncFireball")
